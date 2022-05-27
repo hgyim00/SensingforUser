@@ -13,6 +13,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.common.collect.Lists;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -27,13 +31,24 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import javax.crypto.SecretKey;
 import javax.net.ssl.HttpsURLConnection;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
 public class MainActivity extends AppCompatActivity {
     private DatabaseReference mDatabase;
+    //Cloud token은 매 30분 마다 갱신됨
+
     private String myToken = "ya29.a0ARrdaM_o4t2_T0L0alcejfXbAyZmhbBTOGYKuDbHCgDbDLte2V7woYQy0EpOrghcwfLRF8O7B8EwI9m04eirx5M2vdQRFjf4o01tv88186PiXpPXwVPrQKGeLo0hFi-J8Q60F4sh0iYgFladhnEXbxf7ayEzdCN-3Dbzog";
     private ImageView sensingBtn;
 
@@ -66,13 +81,58 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void apiTestMethod() throws IOException, JSONException {
+
+        /**
+         * @auther Me
+         * @since 2022/05/27 11:33 오후
+         서비스 계정을 사용하여 JWT 생성 후 ai-platform api 호출 하는 함수
+         네트워크를 사용하기 때문에 따로 Thread 만들어서 사용
+         **/
+        InputStream is = getResources().openRawResource(R.raw.test);
+
+
+        GoogleCredential credentials = GoogleCredential.fromStream(is)
+                .createScoped(Lists.newArrayList("https://www.googleapis.com/auth/ai-platform"));
+
+        String token = credentials.getAccessToken();
+        PrivateKey privateKey = credentials.getServiceAccountPrivateKey();
+        String privateKeyId = credentials.getServiceAccountPrivateKeyId();
+
+        long now = System.currentTimeMillis();
+        String signedJwt = "";
+
+
+        // 서비스 계정 (raw에 저장되어있는) 을 갖고 RSA256으로 암호화 하여 JWT 생성
+        try {
+            KeyPair keyPair = new KeyPair(null, privateKey);
+
+            signedJwt = Jwts.builder()
+                    .setHeaderParam("kid", privateKeyId)
+                    .setIssuer("test2-110@wifi-indoor-positioning-351013.iam.gserviceaccount.com")
+                    .setSubject("test2-110@wifi-indoor-positioning-351013.iam.gserviceaccount.com")
+                    .setAudience("https://ml.googleapis.com/")
+                    .setExpiration(new Date(now + 3600 * 1000L))
+                    .setIssuedAt(new Date(now))
+                    .signWith(privateKey, SignatureAlgorithm.RS256)
+                    .compact();
+
+        } catch (Exception e) {
+            Log.d("error", e.toString());
+        }
+
+
+        //Api 엔드포인트
         URL url = new URL("https://ml.googleapis.com/v1/projects/wifi-indoor-positioning-351013/models/SecondModel/versions/tutorial1:predict");
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
-        conn.setRequestProperty("Authorization", "Bearer " + myToken );
+
+        //인증방식: Bearer
+        conn.setRequestProperty("Authorization", "Bearer " + signedJwt );
+        //센서 측정값은 JSON형식으로 POST
         conn.setRequestProperty("Content-Type", "application/json");
 
 
+        //TODO 아래 Dummy값 실제 값으로 변경할 것
         JSONArray arr1 = new JSONArray();
         arr1.put(0.3);
         arr1.put(0.4);

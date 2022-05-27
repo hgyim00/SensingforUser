@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "wifi-indoor-positioning-351013",
+  "private_key_id": "36f140904d7b272a55384d48b3fb470715b9ecfb",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCabCuzG4PSHCjx\nfzhmELUMvHbIoO+FhyzOLsWmAc/Hnl8aWzj0Dy2/nAGu9NHNm6xb/J5Agn9xlK4S\nsKZvdgOzpusDNV2sLFXzi/wSa31TUzkp97TPqt/KNaAS84bjvP2v42k/Dh06MrQC\nCqSCv8Xn/RJ9bFyxolOcnx2+rGKjEojJPQPtF2lCZYuX3V95Ql74m4oYxCmFKrEZ\nvboKVlWBnCxTZmVg0vUlucW4toF3rqoG+kYkhfofkbLpIhqddND3ESFKqQ1iFom6\nVMrvHG76cVqQ4JEoib0h3JEwW+DnxOB8Ev0EvO5fdOkzIPwBjCXbeM6ZjlrS/mgm\niBA11fPHAgMBAAECggEAJHlLQxVLJ/wFwbDKafUlRlpXdiDpIjFg6FxMy96erKgg\nD3IffCn/pMPc8+2YhodwCRQcbuFD59h12y1FSotl6W+SD+JxeyLHtGxKgDFKWz2L\ngXmkB+70x+atpfxGTpFLnFlK+R1E0wO518eavtU8EgUI8n3/UOel9xbwKCLAc4Kl\nxoFvYuM2ioylBW6jYtfLZmoduZpnAaSaeL4fMmtJbqSHJJu6MZn6OYuhwI9wE7xX\nd7e4n9rjgr0IlE0gecSBK8bpcb9N6JE5g50GgVZWJDcREnYFXY7wGNhFKNPgCudM\nTVhkRlk3UGPVytbZyBzpqaZBVXR4RSf7FOwQJOsogQKBgQDG5KmeuOwzk205aCyR\nM2Yn9Q1I3Sk3Dal/UFuPfFGBVh+dYJabN20WOwehXCfYfdi2xxK7uUNwaqSF1dua\ngm2TqZnfcRpQSHLZGxwQORuSJhtJ0LwrUxgR9a62S3scwFBWgVxIDO5Qg1Eb99ub\ni0Pz+fOuSujXANBfpfZzG6laRwKBgQDGwsKlbHzAYiO/qIf8FV4ogbDVXkzFKyFf\nFBnBbiaAq7CXKmXmb6599D+6KvkjQUoeNuE+CXZUMijl1zB99RcmaMskgCHqgeJv\nCw6Wqyxwy0lVrjSGdCM+LJhCr1gKWnPqWAru1rkU23vwHZU6ggdvjNSM2/NSj3x1\n88uA/OnagQKBgQC+JZggPYzb1iNDEdwhyTDuHHJh6cZgcrhMFkgiymilrO+2psP1\niqzI5xBpbNBPQikwvOuk+v6Fd/7oUMeNVQprdGa+XsQYYtshwrA2tlIsjC/khyGO\njfdiHC626zy9BQMJYM0XuP0Rjim6AmE6uI7zrlAQnl8yRf3wo5sU+yoSOwKBgCSa\nV0gpi2vOZvDzs187/CQPhiY1AIRK5hFhXUDe7R5C//lGqI9gP80YPugk486XRnP7\n/Uz0ZyMoPZneICMCEKpVIBvvsM9D7hQvABfFHCEFftLVivy7xIW9pqiZK+h0MeaV\nIiZLyrfJl7BnckTdD0t+ruHl25B3th7ur6poaRSBAoGAPqJM51HN0/hATaGkVaH6\nOrpavl7CFBSsjZ325xI3datMeJYMVdlpi4+HAIaUYR/w2F1z7JWwbo7k8DbnzQsB\ng7/7v6n29TNBSHI0xkofCyf7AT+IEdFk7nJUl4hde/kaJFVchQghR6f9fesWOWld\nsgMIwaP/i+4lq6cRZfQBgNs=\n-----END PRIVATE KEY-----\n",
+  "client_email": "test2-110@wifi-indoor-positioning-351013.iam.gserviceaccount.com",
+  "client_id": "109042190982856063400",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test2-110%40wifi-indoor-positioning-351013.iam.gserviceaccount.com"
+}
