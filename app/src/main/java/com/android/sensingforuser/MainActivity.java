@@ -4,14 +4,22 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.wifi.WifiManager;
+import android.net.wifi.ScanResult;
 import android.os.Bundle;
 import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.common.collect.Lists;
@@ -49,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
 
     private String myToken = "ya29.a0ARrdaM_o4t2_T0L0alcejfXbAyZmhbBTOGYKuDbHCgDbDLte2V7woYQy0EpOrghcwfLRF8O7B8EwI9m04eirx5M2vdQRFjf4o01tv88186PiXpPXwVPrQKGeLo0hFi-J8Q60F4sh0iYgFladhnEXbxf7ayEzdCN-3Dbzog";
     private ImageView sensingBtn;
+    WifiManager wifiManager;
+    BroadcastReceiver wifiScanReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +71,25 @@ public class MainActivity extends AppCompatActivity {
 
         sensingBtn = (ImageView) findViewById(R.id.sensingButton);
 
+        wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        wifiScanReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context c, Intent intent) {
+                boolean success = intent.getBooleanExtra(
+                        WifiManager.EXTRA_RESULTS_UPDATED, false);
+                if (success) {
+                    scanSuccess();
+                } else {
+                    // scan failure handling
+                    Log.d("wifi", "Scan Error");
+                }
+            }
+        };
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+        getApplicationContext().registerReceiver(wifiScanReceiver, intentFilter);
+
         sensingBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -69,11 +98,17 @@ public class MainActivity extends AppCompatActivity {
                         apiTestMethod();
                     } catch (Exception e) {
                         Log.d("http", e.toString());
-
                     }
                 }).start();
+                boolean success = wifiManager.startScan();
+                if (!success) {
+                    // scan failure handling
+                    Log.d("wifi", "error");
+                    Toast.makeText(getApplicationContext(), "측정 실패", Toast.LENGTH_SHORT).show();
+                }
             }
         });
+
     }
 
 
@@ -83,8 +118,8 @@ public class MainActivity extends AppCompatActivity {
         /**
          * @auther Me
          * @since 2022/05/27 11:33 오후
-         서비스 계정을 사용하여 JWT 생성 후 ai-platform api 호출 하는 함수
-         네트워크를 사용하기 때문에 따로 Thread 만들어서 사용
+        서비스 계정을 사용하여 JWT 생성 후 ai-platform api 호출 하는 함수
+        네트워크를 사용하기 때문에 따로 Thread 만들어서 사용
          **/
         InputStream is = getResources().openRawResource(R.raw.test);
 
@@ -194,5 +229,17 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
         //TODO: 센싱 후 textView를 위치 측정한 장소로 바꾸기.
+
     }
+
+
+    private void scanSuccess() {
+        List<ScanResult> results = wifiManager.getScanResults();
+        Log.d("wifi information: ", results.toString());
+        Toast.makeText(getApplicationContext(),"측정",Toast.LENGTH_SHORT).show();
+    }
+    private void scanFailure() {
+        List<ScanResult> results = wifiManager.getScanResults();
+    }
+
 }
