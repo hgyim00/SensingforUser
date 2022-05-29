@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.ScanResult;
 import android.os.Bundle;
@@ -84,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
         teamMember = (TextView) findViewById(R.id.teamMembers);
 
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+
         wifiScanReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context c, Intent intent) {
@@ -128,9 +130,13 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
-        });
 
+            }
+
+        });
+//    WifiInfo info = wifiManager.getConnectionInfo();
+//    String BSSID = info.getBSSID();
+//    int level = info.getRssi();
     }
 
 
@@ -278,7 +284,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void scanSuccess() {
         List<ScanResult> results = wifiManager.getScanResults();
-        Log.d("wifi information: ", results.toString());
+        String result = results.toString();
+        Log.d("wifi information: ", result);
+
         Toast.makeText(getApplicationContext(),"측정",Toast.LENGTH_SHORT).show();
     }
     private void scanFailure() {
