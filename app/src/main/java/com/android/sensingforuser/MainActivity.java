@@ -1,5 +1,7 @@
 package com.android.sensingforuser;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -23,14 +25,20 @@ import android.widget.Toast;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.common.collect.Lists;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -51,12 +59,15 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
+
+
 public class MainActivity extends AppCompatActivity {
     private DatabaseReference mDatabase;
     //Cloud token은 매 30분 마다 갱신됨
 
     private String myToken = "ya29.a0ARrdaM_o4t2_T0L0alcejfXbAyZmhbBTOGYKuDbHCgDbDLte2V7woYQy0EpOrghcwfLRF8O7B8EwI9m04eirx5M2vdQRFjf4o01tv88186PiXpPXwVPrQKGeLo0hFi-J8Q60F4sh0iYgFladhnEXbxf7ayEzdCN-3Dbzog";
     private ImageView sensingBtn;
+    private TextView teamMember;
     WifiManager wifiManager;
     BroadcastReceiver wifiScanReceiver;
 
@@ -70,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
         sensingBtn = (ImageView) findViewById(R.id.sensingButton);
+        teamMember = (TextView) findViewById(R.id.teamMembers);
 
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiScanReceiver = new BroadcastReceiver() {
@@ -100,17 +112,48 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("http", e.toString());
                     }
                 }).start();
+            }
+        });
+        teamMember.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
                 boolean success = wifiManager.startScan();
                 if (!success) {
                     // scan failure handling
                     Log.d("wifi", "error");
                     Toast.makeText(getApplicationContext(), "측정 실패", Toast.LENGTH_SHORT).show();
                 }
+                try {
+                    ReadAPList();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
     }
 
+
+    class AP{
+        String MAC;
+        int value;
+    }
+
+    public void ReadAPList() throws IOException {
+        BufferedReader bf = new BufferedReader(new InputStreamReader(getResources().openRawResource(R.raw.aplist)));
+        String str;
+
+        AP Ap[] = new AP[3590]; // AP 리스트 개수
+        for(int i = 0; i<Ap.length;i++){
+            Ap[i] = new AP();
+            str = bf.readLine();
+            Ap[i].value = -110;
+            Ap[i].MAC = str;
+            Log.d("apList MAC",Ap[i].MAC);
+            Log.d("apList Value",Integer.toString(Ap[i].value));
+        }
+            bf.close();
+    }
 
 
     public void apiTestMethod() throws IOException, JSONException {
