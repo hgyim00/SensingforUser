@@ -1,7 +1,5 @@
 package com.android.sensingforuser;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -10,50 +8,36 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.ScanResult;
 import android.os.Bundle;
-import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.common.collect.Lists;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.PrivateKey;
-import java.security.interfaces.RSAPrivateKey;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.crypto.SecretKey;
 import javax.net.ssl.HttpsURLConnection;
 
 import io.jsonwebtoken.Jwts;
@@ -64,6 +48,8 @@ import io.jsonwebtoken.security.Keys;
 
 public class MainActivity extends AppCompatActivity {
     private DatabaseReference mDatabase;
+    private static int APNUMBER = 3590;
+    private static AP[] Ap;
     //Cloud token은 매 30분 마다 갱신됨
 
     private String myToken = "ya29.a0ARrdaM_o4t2_T0L0alcejfXbAyZmhbBTOGYKuDbHCgDbDLte2V7woYQy0EpOrghcwfLRF8O7B8EwI9m04eirx5M2vdQRFjf4o01tv88186PiXpPXwVPrQKGeLo0hFi-J8Q60F4sh0iYgFladhnEXbxf7ayEzdCN-3Dbzog";
@@ -116,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
                 }).start();
             }
         });
+
         teamMember.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
@@ -126,7 +113,12 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "측정 실패", Toast.LENGTH_SHORT).show();
                 }
                 try {
-                    ReadAPList();
+                    Ap = ReadAPList();
+                    for(int i = 0; i < APNUMBER; i++)
+                    {
+                        Log.d("apList MAC",Ap[i].MAC);
+                        Log.d("apList Value",Integer.toString(Ap[i].value));
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -145,20 +137,25 @@ public class MainActivity extends AppCompatActivity {
         int value;
     }
 
-    public void ReadAPList() throws IOException {
+    class inputAP{
+        String MAC;
+        int value;
+    }
+
+    public AP[] ReadAPList() throws IOException {
         BufferedReader bf = new BufferedReader(new InputStreamReader(getResources().openRawResource(R.raw.aplist)));
         String str;
 
-        AP Ap[] = new AP[3590]; // AP 리스트 개수
-        for(int i = 0; i<Ap.length;i++){
+        AP Ap[] = new AP[APNUMBER]; // AP 리스트 개수
+        for(int i = 0; i< Ap.length;i++){
             Ap[i] = new AP();
             str = bf.readLine();
             Ap[i].value = -110;
             Ap[i].MAC = str;
-            Log.d("apList MAC",Ap[i].MAC);
-            Log.d("apList Value",Integer.toString(Ap[i].value));
+
         }
             bf.close();
+        return Ap;
     }
 
 
@@ -284,13 +281,29 @@ public class MainActivity extends AppCompatActivity {
 
     private void scanSuccess() {
         List<ScanResult> results = wifiManager.getScanResults();
+        int size = results.size();
+        inputAP ApList[] = new inputAP[size];
+        Ap[3589].MAC = "00:13:10:85:fe:01"; // 바뀌는지 테스트
+        for(int i = 0; i < size; i ++)
+        {
+            ApList[i] = new inputAP();
+            ApList[i].MAC = results.get(i).BSSID;
+            ApList[i].value = results.get(i).level;
+            Log.d("inputAP MAC",ApList[i].MAC);
+            Log.d("inputValue Value",Integer.toString(ApList[i].value));
+            for(int j = 0; j < APNUMBER; j++){
+                if(ApList[i].MAC.equals(Ap[j].MAC)){
+                    Ap[j].value = ApList[i].value;
+                    Log.d("Changed MAC",Ap[j].MAC);
+                    Log.d("Changed Value",Integer.toString(Ap[j].value));
+                }
+            }
+        }
         String result = results.toString();
         Log.d("wifi information: ", result);
-
         Toast.makeText(getApplicationContext(),"측정",Toast.LENGTH_SHORT).show();
     }
     private void scanFailure() {
         List<ScanResult> results = wifiManager.getScanResults();
     }
-
 }
