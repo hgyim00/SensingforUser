@@ -11,6 +11,8 @@ import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.net.wifi.ScanResult;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -42,14 +44,13 @@ import javax.net.ssl.HttpsURLConnection;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-
 
 
 public class MainActivity extends AppCompatActivity {
     private DatabaseReference mDatabase;
     private static int APNUMBER = 3889;
     private static AP[] Ap;
+    public String pred="";
     //Cloud token은 매 30분 마다 갱신됨
 
     private String myToken = "ya29.a0ARrdaM_o4t2_T0L0alcejfXbAyZmhbBTOGYKuDbHCgDbDLte2V7woYQy0EpOrghcwfLRF8O7B8EwI9m04eirx5M2vdQRFjf4o01tv88186PiXpPXwVPrQKGeLo0hFi-J8Q60F4sh0iYgFladhnEXbxf7ayEzdCN-3Dbzog";
@@ -112,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
 
+
                 new Thread(() -> {
                     try {
                         apiTestMethod();
@@ -119,6 +121,9 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("http", e.toString());
                     }
                 }).start();
+
+
+
             }
         });
 
@@ -177,6 +182,16 @@ public class MainActivity extends AppCompatActivity {
         return Ap;
     }
 
+    public void postToastMessage(final String message) {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
 
     public void apiTestMethod() throws IOException, JSONException {
 
@@ -230,7 +245,6 @@ public class MainActivity extends AppCompatActivity {
         conn.setRequestProperty("Content-Type", "application/json");
 
 
-        //TODO 아래 Dummy값 실제 값으로 변경할 것
         JSONArray arr1 = new JSONArray();
         for (AP netInfo : Ap ) {
             arr1.put(netInfo.value);
@@ -264,14 +278,16 @@ public class MainActivity extends AppCompatActivity {
         BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 
         // 출력물의 라인과 그 합에 대한 변수.
-        String line;
-        String page = "";
+        String line="";
+        StringBuilder page = new StringBuilder();
 
         // 라인을 받아와 합친다.
         while ((line = reader.readLine()) != null){
-            Log.d("http", line.toString());
+            page.append(line);
         }
         conn.disconnect();
+        pred = page.toString();
+        postToastMessage(pred);
 
 
     }
@@ -310,7 +326,6 @@ public class MainActivity extends AppCompatActivity {
         }
         String result = results.toString();
         Log.d("wifi information: ", result);
-        Toast.makeText(getApplicationContext(),"측정",Toast.LENGTH_SHORT).show();
     }
     private void scanFailure() {
         List<ScanResult> results = wifiManager.getScanResults();
