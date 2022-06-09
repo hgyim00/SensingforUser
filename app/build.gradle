@@ -50,7 +50,7 @@ dependencies {
     implementation 'com.google.apis:google-api-services-ml:v1-rev20211112-1.32.1'
     implementation group: 'com.google.http-client', name: 'google-http-client-jackson2', version: '1.41.8'
     implementation 'com.google.apis:google-api-services-discovery:v1-rev20200806-1.32.1'
-
+    implementation 'com.airbnb.android:lottie:3.0.7'
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.6.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
