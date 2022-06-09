@@ -11,9 +11,12 @@ import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.net.wifi.ScanResult;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,25 +40,28 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.net.ssl.HttpsURLConnection;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-
 
 
 public class MainActivity extends AppCompatActivity {
     private DatabaseReference mDatabase;
-    private static int APNUMBER = 3590;
+    private static int APNUMBER = 4149;
     private static AP[] Ap;
+    public String pred="";
     //Cloud token은 매 30분 마다 갱신됨
 
     private String myToken = "ya29.a0ARrdaM_o4t2_T0L0alcejfXbAyZmhbBTOGYKuDbHCgDbDLte2V7woYQy0EpOrghcwfLRF8O7B8EwI9m04eirx5M2vdQRFjf4o01tv88186PiXpPXwVPrQKGeLo0hFi-J8Q60F4sh0iYgFladhnEXbxf7ayEzdCN-3Dbzog";
     private ImageView sensingBtn;
     private TextView teamMember;
+    public LinearLayout mLayout;
     WifiManager wifiManager;
+
     BroadcastReceiver wifiScanReceiver;
 
     @Override
@@ -66,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         actionBar.hide();
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
-
+        mLayout = findViewById(R.id.loadingPage);
         sensingBtn = (ImageView) findViewById(R.id.sensingButton);
         teamMember = (TextView) findViewById(R.id.teamMembers);
 
@@ -93,13 +99,21 @@ public class MainActivity extends AppCompatActivity {
         sensingBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new Thread(() -> {
-                    try {
-                        apiTestMethod();
-                    } catch (Exception e) {
-                        Log.d("http", e.toString());
-                    }
-                }).start();
+                mLayout.setVisibility(View.VISIBLE);
+                try {
+                    Ap = ReadAPList();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                boolean success = wifiManager.startScan();
+                if (!success) {
+                    // scan failure handling
+                    Log.d("wifi", "error");
+                    Toast.makeText(getApplicationContext(), "측정 실패", Toast.LENGTH_SHORT).show();
+                    mLayout.setVisibility(View.GONE);
+                }
+
             }
         });
 
@@ -114,11 +128,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 try {
                     Ap = ReadAPList();
-                    for(int i = 0; i < APNUMBER; i++)
-                    {
-                        Log.d("apList MAC",Ap[i].MAC);
-                        Log.d("apList Value",Integer.toString(Ap[i].value));
-                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -126,9 +135,16 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
-//    WifiInfo info = wifiManager.getConnectionInfo();
-//    String BSSID = info.getBSSID();
-//    int level = info.getRssi();
+
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                refresh();
+            }
+        };
+
+        //Timer timerCall = new Timer();
+        //timerCall.schedule(timerTask, 0, 1000);
     }
 
 
@@ -143,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public AP[] ReadAPList() throws IOException {
-        BufferedReader bf = new BufferedReader(new InputStreamReader(getResources().openRawResource(R.raw.aplist)));
+        BufferedReader bf = new BufferedReader(new InputStreamReader(getResources().openRawResource(R.raw.list)));
         String str;
 
         AP Ap[] = new AP[APNUMBER]; // AP 리스트 개수
@@ -156,6 +172,17 @@ public class MainActivity extends AppCompatActivity {
         }
             bf.close();
         return Ap;
+    }
+
+    public void postToastMessage(final String message) {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                mLayout.setVisibility(View.GONE);
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
 
@@ -201,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         //Api 엔드포인트
-        URL url = new URL("https://ml.googleapis.com/v1/projects/wifi-indoor-positioning-351013/models/SecondModel/versions/tutorial1:predict");
+        URL url = new URL("https://ml.googleapis.com/v1/projects/wifi-indoor-positioning-351013/models/DecisionTreeModel/versions/RandomForestWithPCA:predict");
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
 
@@ -211,26 +238,15 @@ public class MainActivity extends AppCompatActivity {
         conn.setRequestProperty("Content-Type", "application/json");
 
 
-        //TODO 아래 Dummy값 실제 값으로 변경할 것
         JSONArray arr1 = new JSONArray();
-        arr1.put(0.3);
-        arr1.put(0.4);
-        arr1.put(0.5);
-        arr1.put(0.5);
-
-        JSONArray arr2 = new JSONArray();
-        arr2.put(0.1);
-        arr2.put(0.2);
-        arr2.put(0.3);
-        arr2.put(0.3);
+        for (AP netInfo : Ap ) {
+            arr1.put(netInfo.value);
+        }
 
         JSONArray obj = new JSONArray();
 
         obj.put(arr1);
-        obj.put(arr2);
-
         JSONObject fin = new JSONObject();
-
         fin.put("instances", obj);
 
         Log.d("http", fin.toString());
@@ -255,27 +271,24 @@ public class MainActivity extends AppCompatActivity {
         BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
 
         // 출력물의 라인과 그 합에 대한 변수.
-        String line;
-        String page = "";
+        String line="";
+        StringBuilder page = new StringBuilder();
 
         // 라인을 받아와 합친다.
         while ((line = reader.readLine()) != null){
-            Log.d("http", line.toString());
+            page.append(line);
         }
         conn.disconnect();
+        pred = page.toString();
+        Log.d("http", pred);
+        postToastMessage(pred);
+
 
 
     }
 
-    //센싱 버튼 클릭
-    public void mOnSensing(View view){
-        //예시. 버튼 눌렀을 때 TextView 바꾸기
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("위치").setMessage("당신은 ~에 있습니다");
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-        //TODO: 센싱 후 textView를 위치 측정한 장소로 바꾸기.
-
+    private void refresh() {
+        Log.d("wifi", "refreshed!");
     }
 
 
@@ -283,27 +296,32 @@ public class MainActivity extends AppCompatActivity {
         List<ScanResult> results = wifiManager.getScanResults();
         int size = results.size();
         inputAP ApList[] = new inputAP[size];
-        Ap[3589].MAC = "00:13:10:85:fe:01"; // 바뀌는지 테스트
+        //Ap[0].MAC = "0c:96:cd:9d:93:75"; // 바뀌는지 테스트
         for(int i = 0; i < size; i ++)
         {
             ApList[i] = new inputAP();
             ApList[i].MAC = results.get(i).BSSID;
             ApList[i].value = results.get(i).level;
-            Log.d("inputAP MAC",ApList[i].MAC);
-            Log.d("inputValue Value",Integer.toString(ApList[i].value));
             for(int j = 0; j < APNUMBER; j++){
                 if(ApList[i].MAC.equals(Ap[j].MAC)){
                     Ap[j].value = ApList[i].value;
-                    Log.d("Changed MAC",Ap[j].MAC);
-                    Log.d("Changed Value",Integer.toString(Ap[j].value));
                 }
             }
         }
         String result = results.toString();
         Log.d("wifi information: ", result);
-        Toast.makeText(getApplicationContext(),"측정",Toast.LENGTH_SHORT).show();
+
+
+        new Thread(() -> {
+            try {
+                apiTestMethod();
+            } catch (Exception e) {
+                Log.d("http", e.toString());
+            }
+        }).start();
     }
     private void scanFailure() {
         List<ScanResult> results = wifiManager.getScanResults();
     }
 }
+
