@@ -30,6 +30,7 @@
         </activity>
         <activity
             android:name=".MainActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.SensingforUser"
             android:exported="true">
         </activity>
