@@ -281,9 +281,8 @@ public class MainActivity extends AppCompatActivity {
         }
         conn.disconnect();
         pred = page.toString();
-        String responseMessage = "당신은 지금 "+ pred.substring(17,20) + "에 위치해 있습니다.";
-        Log.d("http", responseMessage);
-        postToastMessage(responseMessage);
+        Log.d("http", pred);
+        postToastMessage(pred);
 
 
 
