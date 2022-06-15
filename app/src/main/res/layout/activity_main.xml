@@ -63,23 +63,16 @@
 
         <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/lottieView"
-            android:layout_width="300dp"
-            android:layout_height="300dp"
+            android:layout_width="500dp"
+            android:layout_height="500dp"
             android:layout_centerVertical="true"
             android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp"
             app:lottie_rawRes="@raw/loading"
-
             app:lottie_autoPlay="true"
+            app:lottie_speed="1.5"
             app:lottie_loop="true" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="분석 중"
-            android:layout_gravity="center"
-            android:textSize="30dp"
-            android:layout_marginTop="20dp"
-            />
 
 
     </LinearLayout>
