@@ -51,7 +51,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 public class MainActivity extends AppCompatActivity {
     private DatabaseReference mDatabase;
-    private static int APNUMBER = 4149;
+    private static int APNUMBER = 2885;
     private static AP[] Ap;
     public String pred="";
     //Cloud token은 매 30분 마다 갱신됨
@@ -228,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         //Api 엔드포인트
-        URL url = new URL("https://ml.googleapis.com/v1/projects/wifi-indoor-positioning-351013/models/DecisionTreeModel/versions/RandomForestWithPCA:predict");
+        URL url = new URL("https://ml.googleapis.com/v1/projects/wifi-indoor-positioning-351013/models/DecisionTreeModel/versions/FinalModel:predict");
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
 
