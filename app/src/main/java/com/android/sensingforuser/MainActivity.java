@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
             Ap[i].MAC = str;
 
         }
-            bf.close();
+        bf.close();
         return Ap;
     }
 
@@ -280,8 +280,10 @@ public class MainActivity extends AppCompatActivity {
         }
         conn.disconnect();
         pred = page.toString();
-        Log.d("http", pred);
-        postToastMessage(pred);
+        String responseMessage = "당신은 지금 "+ pred.substring(17,20) + "호에 있습니다.";
+        Log.d("http", responseMessage);
+        postToastMessage(responseMessage);
+
 
 
 
@@ -324,4 +326,3 @@ public class MainActivity extends AppCompatActivity {
         List<ScanResult> results = wifiManager.getScanResults();
     }
 }
-
